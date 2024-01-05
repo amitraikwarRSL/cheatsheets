@@ -249,3 +249,104 @@ test('async test', (done) => {
   })
 })
 ```
+
+
+# 4 Mock
+Jest mocking have multiple use cases:
+- Mocking function that is passed as arguments in some component or another function basically callbacks function. We can check if a particular function is called, called n times, called with x,y arguments.
+- Another usecase is to mock a library function and checking if that function is called n time, or with x,y arguments.
+- One of the important usecase of this is to mock a network request/ http request/promise await etc.
+
+### Example out of the box:
+- Testing a function which makes a http request without using the mock.
+    ```js
+    import axios from “axios”;
+    function abc(){
+        return axio.get(url).then((res)=>res.data.name).catch((error)=>console.log(err));}
+        export default abc;
+    ```
+    ```js
+    describe(‘abc’, ()=>{
+        test(‘Getting results correctly’, async ()=>{
+            const result = await abc();
+            console.log(result)
+            expect(result).toBe(“Amit Raikwar”)
+            })
+        })
+    ```
+- Now mocking a function http request:
+    - ###1 Mocking whole axios.
+        ```js 
+        import mockaxios from ”axios”jest.mock("axios") 
+        mockaxios.mockImplementation(()=>Promise.resolve({data:{name:”Mock Jedi”}}))
+        describe(‘abc’, ()=>{
+            test(‘Getting results correctly’, async ()=>{
+                const result = await abc();
+                console.log(result)
+                expect(result).toBe(“Mock Jedi”)
+                expect(mockAxios.get).toHaveBeenCalledTimes(1)})
+        })
+        ```
+    - ### 2 Mocking get function.
+        ```js
+        import mockaxios from ”axios”jest.mock("axios")
+        mockAxios.get.mockResolvedvalue({data:{name:”Mock Jedi”}});
+        
+        describe(‘abc’, ()=>{
+            test(‘Getting results correctly’, async ()=>{
+            const result = await abc();
+            console.log(result)expect(result).toBe(“Mock Jedi”)
+            expect(mockAxios.get).toHaveBeenCalledTimes(1)
+            })
+        })
+        ```
+    - ### 3 : Always clears the mock after each test run.
+        ```js
+        afterEach(()=>{
+            Jest.clearAllMocks();
+            });
+        ```
+    - ### 4: Passing a callback without mocking any library:
+        ```js
+        jest.mock(“axios” ,()=> {
+             __esModule: true,
+             default:{
+                get: jest.fn().mockResolvedValue({data:{name: “Mock jedi”}})
+                }
+            } 
+        )
+        ```
+## 4.1 Mock function
+For mocking a function that have been passed.
+
+
+## 4.2 Mocking async function / http
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
