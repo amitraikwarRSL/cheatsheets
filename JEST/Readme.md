@@ -168,3 +168,84 @@ test('resolve to lemon', () => {
   return expect(Promise.reject(Error('pizza'))).rejects.toThrow()
 })
 ```
+
+
+# 3 Async test
+Important  things to consider while writing test for the asynchronous test.
+```js
+test('async test', () => {
+  expect.assertions(3) // Exactly three assertions are called during a test
+  // OR
+  expect.hasAssertions() // At least one assertion is called during a test
+
+  // Your async tests
+})
+```
+We should always mention the times of assertion need to be called in async test so the if a number of test failed to execute then test should get failed.
+
+**Note** :  that you can also do this per file, outside any describe and test:
+```js
+beforeEach(expect.hasAssertions)	
+```
+
+
+
+## 3.1  Async/await test
+```js
+test('async test', async () => {
+  expect.assertions(1)
+  const result = await runAsyncOperation()
+  expect(result).toBe(true)
+})
+```
+**Note**: 
+- For all sync operations we should always use await function if some value is returned.
+
+
+## 3.2 Promise
+```js
+test('async test', () => {
+  expect.assertions(1)
+  return runAsyncOperation().then((result) => {
+    expect(result).toBe(true)
+  })
+})
+```
+
+- There is an another way for testing the async/await by returning a test promise using the *return* so that assertion not get failed.
+
+### or
+
+```js
+test('resolve to lemon', async () => {
+  expect.assertions(2)
+  await expect(Promise.resolve('lemon')).resolves.toBe('lemon')
+  await expect(Promise.resolve('lemon')).resolves.not.toBe('octopus')
+})
+```
+
+```js
+test('resolve to lemon', async () => {
+  expect.assertions(2)
+  await expect(Promise.resolve('lemon')).resolves.toBe('lemon')
+  await expect(Promise.resolve('lemon')).resolves.not.toBe('octopus')
+})
+```
+
+## 3.3 Done callback **
+Wrap your assertions in try/catch block, otherwise Jest will ignore failures:
+```js
+test('async test', (done) => {
+  expect.assertions(1)
+  runAsyncOperation()
+  setTimeout(() => {
+    try {
+      const result = getAsyncOperationResult()
+      expect(result).toBe(true)
+      done()
+    } catch (err) {
+      done.fail(err)
+    }
+  })
+})
+```
