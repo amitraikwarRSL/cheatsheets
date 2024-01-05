@@ -258,6 +258,7 @@ Jest mocking have multiple use cases:
 - One of the important usecase of this is to mock a network request/ http request/promise await etc.
 
 ### Example out of the box:
+- [Checkout this video incase below thing doesn't make sense](https://www.youtube.com/watch?v=gA-uNj2FgdM)
 - Testing a function which makes a http request without using the mock.
     ```js
     import axios from “axios”;
@@ -318,19 +319,142 @@ Jest mocking have multiple use cases:
         ```
 ## 4.1 Mock function
 For mocking a function that have been passed.
+```js
+    test('call the callback', () => {
+  const callback = jest.fn()
+  fn(callback)
+  expect(callback).toBeCalled()
+  expect(callback.mock.calls[0][1].baz).toBe('pizza') // Second argument of the first call
+  // Match the first and the last arguments but ignore the second argument
+  expect(callback).toHaveBeenLastCalledWith('meal', expect.anything(), 'margarita')
+})
+```
+
+## 4.2 Returning, resolving and rejecting values
+
+- Your mocks can return values:
+```js
+const callback = jest.fn().mockReturnValue(true)
+const callbackOnce = jest.fn().mockReturnValueOnce(true)
+```
+- Or resolve values:
+```js
+const promise = jest.fn().mockResolvedValue(true)
+const promiseOnce = jest.fn().mockResolvedValueOnce(true)
+```
+- Mock function even can reject values.
+```js
+const failedPromise = jest.fn().mockRejectedValue('error')
+const failedPromiseOnce = jest.fn().mockRejectedValueOnce('error')
+```
+- We can even combine these:
+```js
+const callback = jest.fn().mockReturnValueOnce(false).mockReturnValue(true)
+
+// ->
+//  call 1: false
+//  call 2+: true
+```
+
+## Mock module using Jest.mock method
+```js
+jest.mock('lodash/memoize', () => (a) => a) // The original lodash/memoize should exist
+jest.mock('lodash/memoize', () => (a) => a, { virtual: true }) // The original lodash/memoize isn’t required
+```
 
 
-## 4.2 Mocking async function / http
+## Mock object methods
+-
+```js
+const spy = jest.spyOn(console, 'log').mockImplementation(() => {})
+expect(console.log.mock.calls).toEqual([['dope'], ['nope']])
+spy.mockRestore()
+```
+- 
+```js
+const spy = jest.spyOn(ajax, 'request').mockImplementation(() => Promise.resolve({ success: true }))
+expect(spy).toHaveBeenCalled()
+spy.mockRestore()
+```
+
+## Clearing and restoring mocks
+
+- For one mock:
+```js
+fn.mockClear() // Clears mock usage date (fn.mock.calls, fn.mock.instances)
+fn.mockReset() // Clears and removes any mocked return values or implementations
+fn.mockRestore() // Resets and restores the initial implementation
+```
+- For all mocks:
+```js
+jest.clearAllMocks()
+jest.resetAllMocks()
+jest.restoreAllMocks()
+```
+
+## Accessing the original module when using mocks
+```js
+jest.mock('fs')
+const fs = require('fs') // Mocked module
+const fs = require.requireActual('fs') // Original module
+```
+
+## Timer mocks
+Write synchronous test for code that uses native timer functions (setTimeout, setInterval, clearTimeout, clearInterval).
+
+```js
+// Enable fake timers
+jest.useFakeTimers()
+
+test('kill the time', () => {
+  const callback = jest.fn()
+
+  // Run some code that uses setTimeout or setInterval
+  const actual = someFunctionThatUseTimers(callback)
+
+  // Fast-forward until all timers have been executed
+  jest.runAllTimers()
+
+  // Check the results synchronously
+  expect(callback).toHaveBeenCalledTimes(1)
+})
+```
+
+- Or adjust timers by time with advanceTimersByTime():
+
+```js 
+// Enable fake timers
+jest.useFakeTimers()
+
+test('kill the time', () => {
+  const callback = jest.fn()
+
+  // Run some code that uses setTimeout or setInterval
+  const actual = someFunctionThatUseTimers(callback)
+
+  // Fast-forward for 250 ms
+  jest.advanceTimersByTime(250)
+
+  // Check the results synchronously
+  expect(callback).toHaveBeenCalledTimes(1)
+})
+```
+Use jest.runOnlyPendingTimers() for special cases.
+
+Note: you should call jest.useFakeTimers() in your test case to use other fake timer methods.
 
 
-
-
-
-
-
-
-
-
+## Skipping tests
+- Don’t run these tests:
+```js
+describe.skip('makePoniesPink'...
+tests.skip('make each pony pink'...
+```
+- Run only these tests:
+```js
+describe.only('makePoniesPink'...
+tests.only('make each pony pink'...
+```
 
 
 
